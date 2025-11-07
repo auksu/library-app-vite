@@ -4,7 +4,10 @@ import initialBooks from "./initialBooks.js";
 
 export function initializeLocalStorage() {
   if (!localStorage.getItem("booksData")) {
-    const booksWithId = initialBooks.map((b) => ({ ...b, id: Date.now().toString() + Math.random() }));
+    const booksWithId = initialBooks.map((b) => ({
+      ...b,
+      id: Date.now().toString() + Math.random()
+    }));
     localStorage.setItem("booksData", JSON.stringify(booksWithId));
   }
 

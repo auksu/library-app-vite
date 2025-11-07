@@ -17,13 +17,13 @@ export default function LoginView() {
     if (user) {
       login(user);
     } else {
-      setError("ユーザー名またはパスワードが間違っています♡");
+      setError("ユーザー名またはパスワードが間違っています");
     }
   };
 
   return (
     <div className="login-page flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-2xl font-bold mb-4">図書管理ログイン♡</h1>
+      <h1 className="text-2xl font-bold mb-4">図書管理ログイン</h1>
       <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
         <input
           type="text"
@@ -40,7 +40,7 @@ export default function LoginView() {
           className="border px-2 py-1"
         />
         {error && <div className="text-red-500 text-sm">{error}</div>}
-        <button type="submit" className="px-3 py-1 border rounded bg-blue-100 mt-2">ログイン♡</button>
+        <button type="submit" className="px-3 py-1 border rounded bg-blue-100 mt-2">ログイン</button>
       </form>
     </div>
   );

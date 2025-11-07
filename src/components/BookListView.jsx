@@ -20,7 +20,7 @@ export default function BookListView({ userRole = "user" }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAdd = () => {
-    setSelectedBook({ title: "", tags: [] });
+    setSelectedBook({ title: "", tags: [], studentId: "" }); // 新規追加用
     setIsModalOpen(true);
   };
 
@@ -30,7 +30,8 @@ export default function BookListView({ userRole = "user" }) {
   };
 
   const handleSave = (book) => {
-    saveBook(book);
+    saveBook(book); // Firebase に反映
+    setIsModalOpen(false);
   };
 
   const handleAddFilterTag = (tag) => {
@@ -43,11 +44,9 @@ export default function BookListView({ userRole = "user" }) {
     filterByTags(filterTags.filter((t) => t !== tag));
   };
 
-  // 本のタグをすべて集めてボタン化
   const allTags = useMemo(() => Array.from(new Set(books.flatMap((b) => b.tags))), [books]);
 
-  // 検索＋タグ絞り込みを反映した表示用配列
-  const filteredBooks = books.filter((book) => {
+  const filteredBooksDisplay = books.filter((book) => {
     const matchesQuery = book.title.toLowerCase().includes(query.toLowerCase());
     const matchesTags = filterTags.every((tag) => book.tags.includes(tag));
     return matchesQuery && matchesTags;
@@ -55,7 +54,6 @@ export default function BookListView({ userRole = "user" }) {
 
   return (
     <div className="p-4">
-      {/* 検索バー + 本追加ボタン */}
       <div className="flex gap-2 mb-4">
         <input
           type="text"
@@ -74,7 +72,6 @@ export default function BookListView({ userRole = "user" }) {
         )}
       </div>
 
-      {/* タグボタン */}
       <div className="mb-4">
         <label className="block mb-1 text-sm">タグで絞り込み</label>
         <div className="flex flex-wrap gap-2 mb-2">
@@ -83,9 +80,7 @@ export default function BookListView({ userRole = "user" }) {
             return (
               <button
                 key={tag}
-                className={`px-2 py-1 rounded border ${
-                  isSelected ? "bg-blue-400 text-white" : "bg-gray-100"
-                }`}
+                className={`px-2 py-1 rounded border ${isSelected ? "bg-blue-400 text-white" : "bg-gray-100"}`}
                 onClick={() => {
                   if (isSelected) handleRemoveFilterTag(tag);
                   else handleAddFilterTag(tag);
@@ -97,7 +92,6 @@ export default function BookListView({ userRole = "user" }) {
           })}
         </div>
 
-        {/* 選択中タグ表示 */}
         <div className="flex flex-wrap gap-2">
           {filterTags.map((tag) => (
             <span
@@ -111,9 +105,8 @@ export default function BookListView({ userRole = "user" }) {
         </div>
       </div>
 
-      {/* 本リスト */}
       <div className="grid gap-2">
-        {filteredBooks.map((book) => (
+        {filteredBooksDisplay.map((book) => (
           <BookItem
             key={book.id}
             book={book}
@@ -122,12 +115,9 @@ export default function BookListView({ userRole = "user" }) {
             onDelete={userRole === "admin" ? () => deleteBook(book.id) : undefined}
           />
         ))}
-        {filteredBooks.length === 0 && (
-          <p className="text-gray-400">該当する本はありません</p>
-        )}
+        {filteredBooksDisplay.length === 0 && <p className="text-gray-400">該当する本はありません</p>}
       </div>
 
-      {/* 編集／追加モーダル */}
       {userRole === "admin" && (
         <EditModal
           isOpen={isModalOpen}

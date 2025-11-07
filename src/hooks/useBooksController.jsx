@@ -1,41 +1,52 @@
 // ./src/hooks/useBooksController.jsx
 
-import { useState, useMemo } from "react";
-
-// 初期データ
-const initialBooksData = [
-  { title: "JavaScript入門", tags: ["プログラミング", "JS"], studentId: "", id: "1" },
-  { title: "React完全ガイド", tags: ["プログラミング", "React"], studentId: "", id: "2" },
-  { title: "デザインパターン入門", tags: ["設計", "OOP"], studentId: "", id: "3" },
-];
+import { useState, useEffect, useMemo } from "react";
+import { db } from "../firebaseConfig.js";
+import { ref, onValue, set, push } from "firebase/database";
 
 export function useBooksController() {
-  const [books, setBooks] = useState(initialBooksData);
+  const [books, setBooks] = useState([]);
   const [query, setQuery] = useState("");
   const [filterTags, setFilterTags] = useState([]);
 
-  const saveBook = (book) => {
-    setBooks((prev) => {
-      const idx = prev.findIndex((b) => b.id === book.id);
-      if (idx >= 0) {
-        const newBooks = [...prev];
-        newBooks[idx] = book; // 更新
-        return newBooks;
-      } else {
-        // 新規追加の場合はランダムIDを付与
-        return [...prev, { ...book, id: Date.now().toString() }];
-      }
+  useEffect(() => {
+    const booksRef = ref(db, "books");
+    const unsubscribe = onValue(booksRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      const booksArray = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+      setBooks(booksArray);
     });
+    return () => unsubscribe();
+  }, []);
+
+  const saveBook = (book) => {
+    const booksRef = ref(db, "books");
+    if (book.id) {
+      set(ref(db, `books/${book.id}`), {
+        title: book.title,
+        tags: book.tags,
+        studentId: book.studentId || "",
+      });
+    } else {
+      const newRef = push(booksRef);
+      set(newRef, {
+        title: book.title,
+        tags: book.tags,
+        studentId: book.studentId || "",
+      });
+    }
   };
 
-  const deleteBook = (id) => setBooks((prev) => prev.filter((b) => b.id !== id));
+  const deleteBook = (id) => {
+    set(ref(db, `books/${id}`), null);
+  };
 
   const search = (text) => setQuery(text);
   const filterByTags = (tags) => setFilterTags(tags);
 
   const filteredBooks = useMemo(() => {
     return books.filter((b) => {
-      const matchQuery = b.title.includes(query);
+      const matchQuery = b.title.toLowerCase().includes(query.toLowerCase());
       const matchTags = filterTags.length === 0 || filterTags.every((tag) => b.tags.includes(tag));
       return matchQuery && matchTags;
     });

@@ -11,7 +11,7 @@ export default function BookItem({ book, onToggleLoan, onEdit, onDelete }) {
 
   const handleToggle = () => {
     if (!borrower.trim() && !book.studentId) {
-      alert("貸出者名を入力してください♡");
+      alert("貸出者名を入力してください");
       return;
     }
     onToggleLoan({ ...book, studentId: book.studentId ? "" : borrower });
